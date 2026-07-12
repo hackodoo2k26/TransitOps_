@@ -23,6 +23,9 @@
 - [User Roles & Permissions](#-user-roles--permissions)
 - [Tech Stack](#️-tech-stack)
 - [Project Structure](#-project-structure)
+- [Frontend Architecture](#-frontend-architecture)
+- [Backend Architecture](#-backend-architecture)
+- [Authentication](#-authentication)
 - [Getting Started](#-getting-started)
 - [Environment Variables](#-environment-variables)
 - [API Reference](#-api-reference)
@@ -67,13 +70,15 @@ TransitOps is a role-based web application that gives every stakeholder — from
 ### 🔐 Authentication & Access
 
 - [x] Secure email/password login with session validation
-- [x] Role-Based Access Control (RBAC) across all four roles
+- [x] Secure password recovery flow (Forgot / Reset password via email link)
+- [x] Role-Based Access Control (RBAC) across all four roles (Fleet Manager, Dispatcher, Safety Officer, Financial Analyst)
 - [x] Route-level and action-level permission enforcement
 
 ### 📊 Operational Dashboard
 
 - [x] Live KPIs — Active Vehicles, Available Vehicles, Vehicles in Maintenance, Active Trips, Pending Trips, Drivers On Duty, Fleet Utilization (%)
 - [x] Filters by vehicle type, status, and region
+- [x] Global super admin dashboard viewing all organizations
 
 ### 🚐 Vehicle Registry
 
@@ -83,7 +88,8 @@ TransitOps is a role-based web application that gives every stakeholder — from
 ### 👤 Driver Management
 
 - [x] Driver profiles — License Number, Category, Expiry Date, Contact, Safety Score, Status
-- [x] Status lifecycle: `Available / On Trip / Off Duty / Suspended`
+- [x] Driver document uploads (License, PAN, Aadhaar, etc.) and profile photo uploading
+- [x] Status lifecycle: `Available / On Trip / Off Duty / Suspended / Inactive`
 
 ### 🗺️ Trip Management
 
@@ -93,13 +99,14 @@ TransitOps is a role-based web application that gives every stakeholder — from
 
 ### 🔧 Maintenance Workflow
 
-- [x] Maintenance logging per vehicle
+- [x] Maintenance logging per vehicle with status (`Open` / `Closed`) and cost
 - [x] Auto status transition to `In Shop` on active maintenance record — instantly removed from the dispatch pool
+- [x] Closing maintenance restores vehicle to `Available`
 
 ### ⛽ Fuel & Expense Tracking
 
-- [x] Fuel logs (liters, cost, date) and general expenses (tolls, misc.)
-- [x] Auto-computed total operational cost per vehicle (Fuel + Maintenance)
+- [x] Fuel logs (liters, cost, odometer reference, date) and general expenses (tolls, maintenance, fuel, misc.)
+- [x] Auto-computed total operational cost per vehicle (Fuel + Maintenance + Expenses)
 
 ### 📈 Reports & Analytics
 
@@ -107,7 +114,13 @@ TransitOps is a role-based web application that gives every stakeholder — from
 - [x] Fleet Utilization
 - [x] Operational Cost breakdown
 - [x] Vehicle ROI
-- [x] CSV export
+- [x] Monthly Expenses report
+- [x] Export capability to both CSV and PDF formats
+
+### 🛡️ Audit & Notifications
+
+- [x] Automated system audit logs tracking entity changes (before/after state, actor, IP, User Agent)
+- [x] Notification engine sending system or email notifications (e.g. invite, system alerts)
 
 ---
 
@@ -286,106 +299,217 @@ stateDiagram-v2
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | React, React Router, Axios, Recharts (analytics), TailwindCSS |
-| Backend | Node.js, Express.js |
-| Database | PostgreSQL |
-| ORM | Prisma (or Sequelize/TypeORM) |
-| Auth | JWT-based sessions, bcrypt password hashing |
-| Validation | Server-side rule engine (custom middleware) |
-| Export | CSV generation (`json2csv`) |
-| Deployment | Docker-ready / can be hosted on Render, Railway, or Vercel + Neon/Supabase |
+| **Frontend** | React 19, React Router v7, Axios, TailwindCSS v4, Framer Motion, Lucide React |
+| **Backend** | Node.js, Express.js (v5), TypeScript (run via `tsx`, compiled via `tsc`) |
+| **Database** | PostgreSQL |
+| **ORM** | Drizzle ORM, Drizzle Kit |
+| **Authentication** | JWT (Access + Refresh tokens), bcrypt password hashing |
+| **Validation** | Zod schema validation |
+| **Logging & Security** | Winston logger, Morgan HTTP logger, Helmet security headers, Express Rate Limit |
+| **File Uploads** | Multer |
+| **Email Service** | Nodemailer |
+| **PDF Generation** | PDFKit |
+
+---
 
 ## 📁 Project Structure
 
 ```
 transitops/
-├── client/                      # React frontend
+├── client/                      # React Frontend (Vite SPA)
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   │   ├── Dashboard/
-│   │   │   ├── Vehicles/
-│   │   │   ├── Drivers/
-│   │   │   ├── Trips/
-│   │   │   ├── Maintenance/
-│   │   │   ├── FuelExpenses/
-│   │   │   └── Reports/
-│   │   ├── context/              # Auth & RBAC context
-│   │   └── services/             # API calls
-│   └── package.json
-├── server/                      # Node.js + Express backend
-│   ├── prisma/                  # Prisma schema and migrations
-│   ├── routes/
-│   ├── controllers/
-│   ├── middleware/               # auth, rbac, validators
-│   ├── utils/                    # cost/efficiency calculators
-│   └── server.js
-├── .env.example
-└── README.md
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js v18+
-- PostgreSQL (local instance or managed service like Neon/Supabase)
-- npm or yarn
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/hackodoo2k26/TransitOps_.git
-cd TransitOps_
-
-```
-
-### Running the app
-
-```bash
-# Start the backend (from /server)
-npm run dev        # runs on http://localhost:5000
-
-# Start the frontend (from /client, in a separate terminal)
-npm start           # runs on http://localhost:3000
-```
-
-## 🔑 Environment Variables
-
-Create a `.env` file inside `/server` based on `.env.example`:
-
-```env
-PORT=5000
-DATABASE_URL=postgresql://user:password@localhost:5432/transitops
-JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRES_IN=7d
+│   │   ├── app/                 # Application Entry and Router config (React Router v7)
+│   │   ├── components/          # Reusable UI component library, layouts, and auth guards
+│   │   │   ├── auth/            # ProtectedRoute and auth components
+│   │   │   └── layout/          # AppLayout shell components (Sidebar, Header)
+│   │   ├── pages/               # Page views (Dashboard, Vehicles, Drivers, Trips, Maintenance, Fuel/Expenses, Reports, Settings, Auth)
+│   │   ├── hooks/               # Custom React hooks (useAuth, etc.)
+│   │   ├── lib/                 # Utility libraries (access control helpers, etc.)
+│   │   ├── services/            # API client layers using Axios
+│   │   ├── styles/              # Global styling configuration
+│   │   └── types/               # TypeScript type declarations
+│   ├── vite.config.ts           # Vite build configuration
+│   └── package.json             # Frontend dependencies
+├── backend/                     # Node.js + Express Backend
+│   ├── src/
+│   │   ├── db/                  # Drizzle ORM database schema and connection config
+│   │   ├── routes/              # Express API endpoints
+│   │   ├── controllers/         # Request handling logic
+│   │   ├── middleware/          # Auth, RBAC, validators, file uploads, rate limiters
+│   │   ├── services/            # Business logic and computations
+│   │   ├── repositories/        # Database query layers
+│   │   ├── validators/          # Zod schema definitions
+│   │   ├── mail/                # Email services and templates (Nodemailer)
+│   │   ├── constants/           # Roles, permissions, status codes
+│   │   └── utils/               # Handlers, calculators, and helpers
+│   ├── drizzle.config.ts        # Drizzle ORM generation settings
+│   ├── Dockerfile               # Production container config
+│   ├── docker-compose.yml       # Docker local compose services
+│   └── package.json             # Backend dependencies and scripts
+└── README.md                    # Root documentation
 ```
 
 ---
 
+## 💻 Frontend Architecture
+
+The client side is structured as a single-page application built on React 19 and Vite:
+- **Routing**: Handled by **React Router v7** using the new router setup configured in [router.tsx](file:///c:/Users/shrey/Everything/TransitOps_/client/src/app/router.tsx).
+- **Application Shell**: An [AppLayout](file:///c:/Users/shrey/Everything/TransitOps_/client/src/components/layout/AppLayout.tsx) wraps all internal modules. It features responsive sidebar navigation, a page header, and breadcrumb trails that automatically parse route metadata.
+- **Access Control**: A [ProtectedRoute](file:///c:/Users/shrey/Everything/TransitOps_/client/src/components/auth/ProtectedRoute.tsx) intercepts page routing to check authentication status and enforce role-based access. Only authorized roles (e.g. `FLEET_MANAGER`, `DISPATCHER`, `SAFETY_OFFICER`, `FINANCIAL_ANALYST`) can access specific pages.
+- **Design System**: Constructed using Tailwind CSS v4 and Framer Motion for rich animations. Layout components are modularized under `client/src/components/ui` (such as Card, Button, Input, Select, Modal, Badge).
+
+---
+
+## ⚙️ Backend Architecture
+
+The backend implements a modular structure built on Express 5 and TypeScript:
+- **Modular Routes**: Requests are directed from the main router in [routes/index.ts](file:///c:/Users/shrey/Everything/TransitOps_/backend/src/routes/index.ts) to specialized controllers for `auth`, `audit-logs`, `organizations`, `users`, `vehicles`, `drivers`, `trips`, `maintenance`, `fuel-logs`, `expenses`, `dashboards`, and `reports`.
+- **Database Layer**: PostgreSQL managed through **Drizzle ORM**. Schemas are configured with relations and type safety in [db/schema.ts](file:///c:/Users/shrey/Everything/TransitOps_/backend/src/db/schema.ts).
+- **Validation**: Incoming request bodies, query params, and route parameters are validated using custom middlewares executing **Zod schemas**.
+- **Media Upload**: Utilizes **Multer** for handling local driver document and profile picture uploads, saving files into the local upload directory.
+- **Security & Rate Limiting**: Employs Helmet, CORS, and Express Rate Limit to guard endpoints.
+- **Reporting & Mail**: A custom Nodemailer transporter triggers transaction emails (such as invitations and password resets), while PDFKit renders printable PDF reports dynamically.
+
+---
+
+## 🔑 Authentication
+
+TransitOps implements a security framework for managing credentials and sessions:
+1. **User Credentials**: Passwords are securely hashed using `bcrypt` and stored in the PostgreSQL database.
+2. **Access & Refresh Tokens**: On successful authentication, the backend issues an access token (stored in memory) and a cryptographically strong refresh token stored in the database.
+3. **Route Guards**: Express endpoints require authorization validation via the `authenticate` middleware, which parses incoming `Bearer` JWT tokens and verifies organization-level access.
+4. **Password Recovery**: Users can request password reset links via email. The system generates a secure one-time password reset token, sends a Nodemailer email, validates the token on the front-end page, and updates the user's password hash.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js v18+ or v20+
+- PostgreSQL database instance
+- npm or yarn
+
+### Installation & Setup
+
+1. **Clone and Install Dependencies**
+   ```bash
+   git clone https://github.com/hackodoo2k26/TransitOps_.git
+   cd TransitOps_
+
+   # Install Backend dependencies
+   cd backend
+   npm install
+
+   # Install Frontend dependencies
+   cd ../client
+   npm install
+   ```
+
+2. **Database Migrations & Seeding**
+   Configure your backend environment variables (see below), then run:
+   ```bash
+   cd ../backend
+   npm run db:generate  # Generates database migrations
+   npm run db:push      # Pushes schemas to the database directly (for dev)
+   npm run db:migrate   # Applies database migrations
+   npm run db:seed      # Seeds the database with default roles, permissions, and test data
+   ```
+
+3. **Running the Application**
+   ```bash
+   # In the /backend directory
+   npm run dev          # Starts the Express backend on http://localhost:3001
+
+   # In the /client directory (in a separate terminal)
+   npm run dev          # Starts the Vite frontend on http://localhost:5173
+   ```
+
+---
+
+## 🔑 Environment Variables
+
+### Backend Configuration (`backend/.env`)
+Create a `.env` file in the `backend/` directory using `.env.example` as a template:
+```env
+NODE_ENV=development
+PORT=3001
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/transitops
+DB_POOL_MAX=10
+JWT_SECRET=supersecretjwtvalue123
+JWT_REFRESH_SECRET=supersecretrefreshvalue123
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN_DAYS=7
+FRONTEND_URL=http://localhost:5173
+APP_BASE_URL=http://localhost:3001
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_USER=
+SMTP_PASS=
+MAIL_FROM=noreply@transitops.com
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=300
+UPLOAD_DIR=uploads
+```
+
+### Frontend Configuration (`client/.env`)
+Create a `.env` file in the `client/` directory:
+```env
+VITE_API_URL=http://localhost:3001/api
+```
+
+---
+
+## 📜 Available Scripts
+
+### Backend (`/backend`)
+- `npm run dev`: Runs the development server using `tsx` (watches `src/index.ts`).
+- `npm run build`: Compiles TypeScript files to the `dist/` folder using `tsc`.
+- `npm run start`: Runs the compiled production code (`dist/index.js`).
+- `npm run db:generate`: Generates migration files based on schema changes.
+- `npm run db:push`: Automatically pushes schema changes directly to the database.
+- `npm run db:migrate`: Executes pending Drizzle schema migrations.
+- `npm run db:seed`: Seeds mock and default data into the database.
+
+### Frontend (`/client`)
+- `npm run dev`: Launches the Vite development server.
+- `npm run build`: Compiles TypeScript and builds the production-ready static bundle.
+- `npm run lint`: Runs ESLint check across all files.
+- `npm run preview`: Previews the compiled production bundle locally.
+
 ## 🔌 API Reference
 
-| Method     | Endpoint                         | Description              | Access                        |
-| ---------- | -------------------------------- | ------------------------ | ----------------------------- |
-| POST       | `/api/auth/login`                | Authenticate user        | Public                        |
-| GET        | `/api/dashboard/kpis`            | Fetch dashboard KPIs     | All roles                     |
-| GET / POST | `/api/vehicles`                  | List / register vehicles | Fleet Manager                 |
-| PATCH      | `/api/vehicles/:id/status`       | Update vehicle status    | Fleet Manager                 |
-| GET / POST | `/api/drivers`                   | List / register drivers  | Fleet Manager, Safety Officer |
-| PATCH      | `/api/drivers/:id/status`        | Update driver status     | Safety Officer                |
-| GET / POST | `/api/trips`                     | List / create trips      | Driver, Fleet Manager         |
-| PATCH      | `/api/trips/:id/dispatch`        | Dispatch a trip          | Driver, Fleet Manager         |
-| PATCH      | `/api/trips/:id/complete`        | Complete a trip          | Driver, Fleet Manager         |
-| PATCH      | `/api/trips/:id/cancel`          | Cancel a trip            | Driver, Fleet Manager         |
-| GET / POST | `/api/maintenance`               | List / log maintenance   | Fleet Manager                 |
-| PATCH      | `/api/maintenance/:id/close`     | Close maintenance record | Fleet Manager                 |
-| GET / POST | `/api/fuel-logs`                 | List / log fuel entries  | Fleet Manager, Driver         |
-| GET / POST | `/api/expenses`                  | List / log expenses      | Fleet Manager                 |
-| GET        | `/api/reports/fuel-efficiency`   | Distance/Fuel by vehicle | Financial Analyst             |
-| GET        | `/api/reports/utilization`       | Fleet utilization %      | Financial Analyst             |
-| GET        | `/api/reports/roi`               | Vehicle ROI              | Financial Analyst             |
-| GET        | `/api/reports/export?format=csv` | Export any report as CSV | Financial Analyst             |
+| Method | Endpoint | Description | Access Control |
+| --- | --- | --- | --- |
+| **POST** | `/api/auth/login` | Authenticate user credentials & issue JWTs | Public |
+| **POST** | `/api/auth/forgot-password` | Request password reset token via email | Public |
+| **POST** | `/api/auth/reset-password` | Reset password using verified token | Public |
+| **GET** | `/api/dashboards/organization` | Fetch organization KPIs for dashboard | Authenticated Users |
+| **GET** | `/api/dashboards/global` | Fetch global KPIs for super admin view | Super Admins only |
+| **GET / POST** | `/api/vehicles` | List vehicles / Register a new vehicle | Fleet Manager |
+| **PATCH** | `/api/vehicles/:id` | Update vehicle details | Fleet Manager |
+| **DELETE** | `/api/vehicles/:id` | Remove a vehicle from the system | Fleet Manager |
+| **GET / POST** | `/api/drivers` | List drivers / Register a new driver profile | Dispatcher, Safety Officer |
+| **PATCH** | `/api/drivers/:id` | Update driver details | Dispatcher |
+| **POST** | `/api/drivers/:id/status` | Update driver status (`suspended`, etc.) | Dispatcher, Safety Officer |
+| **POST** | `/api/drivers/:id/safety` | Adjust safety score (0-100) | Safety Officer |
+| **POST** | `/api/drivers/:id/documents` | Upload a compliance document (Multer) | Dispatcher |
+| **POST** | `/api/drivers/:id/photo` | Upload driver profile picture (Multer) | Dispatcher |
+| **DELETE** | `/api/drivers/:id` | Soft-delete a driver profile | Dispatcher |
+| **GET / POST** | `/api/trips` | List trips / Create a new trip | Dispatcher, Fleet Manager |
+| **POST** | `/api/trips/:id/dispatch` | Dispatched status transition for trip | Dispatcher, Fleet Manager |
+| **POST** | `/api/trips/:id/complete` | Complete trip (records odometer/fuel) | Dispatcher, Fleet Manager |
+| **POST** | `/api/trips/:id/cancel` | Cancel trip and revert vehicle/driver status | Dispatcher, Fleet Manager |
+| **GET / POST** | `/api/maintenance` | List maintenance logs / Log maintenance | Fleet Manager |
+| **POST** | `/api/maintenance/:id/close` | Complete and close maintenance log | Fleet Manager |
+| **GET / POST** | `/api/fuel-logs` | List fuel logs / Log fuel receipt | Fleet Manager, Driver |
+| **GET / POST** | `/api/expenses` | List expenses / Log operational expense | Fleet Manager |
+| **GET** | `/api/reports/fuel-efficiency` | Retrieve fuel efficiency reports | Financial Analyst |
+| **GET** | `/api/reports/fleet-utilization` | Retrieve fleet utilization ratios | Financial Analyst |
+| **GET** | `/api/reports/vehicle-roi` | Retrieve vehicle ROI reports | Financial Analyst |
+| **GET** | `/api/reports/operational-cost` | Retrieve operational cost summary reports | Financial Analyst |
+| **GET** | `/api/reports/monthly-expenses` | Retrieve monthly expense calculations | Financial Analyst |
+| **GET** | `/api/reports/monthly-expenses/export` | Export monthly expense report (CSV/PDF) | Financial Analyst |
 
 ---
 
@@ -407,45 +531,30 @@ JWT_EXPIRES_IN=7d
 
 The original problem statement leaves a few details open to interpretation. Here's how we resolved each one, and why:
 
-| Gap in the spec                                                                                                       | Our resolution                                                                                                                                                                                     |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Vehicle ROI formula requires "Revenue," which is never defined as a field anywhere**                                | Added a `revenue` field captured at trip creation/completion (rate × distance or a flat fee), rolled up per vehicle for the ROI report                                                             |
-| **Dashboard supports a "region" filter, but Vehicle has no region field**                                             | Added a `region` / base-location field to the Vehicle model                                                                                                                                        |
-| **Maintenance Log has no defined fields**                                                                             | Modeled it with description, cost, date, and status (`Open`/`Closed`) — cost feeds directly into Operational Cost, status drives the vehicle auto-transition rule                                  |
+| Gap in the spec | Our resolution |
+| --- | --- |
+| **Vehicle ROI formula requires "Revenue," which is never defined as a field anywhere** | Added a `revenue` field captured at trip creation/completion (rate × distance or a flat fee), rolled up per vehicle for the ROI report |
+| **Dashboard supports a "region" filter, but Vehicle has no region field** | Added a `region` / base-location field to the Vehicle model |
+| **Maintenance Log has no defined fields** | Modeled it with description, cost, date, and status (`Open`/`Closed`) — cost feeds directly into Operational Cost, status drives the vehicle auto-transition rule |
 | **Trip completion requires "final odometer and fuel consumed," but these fields aren't listed under Trip Management** | Added `startOdometer` (snapshotted at dispatch), `endOdometer`, and `fuelConsumed` to Trip; Fuel Efficiency is computed from actual odometer delta, not planned distance, to prevent gamed numbers |
-| **Business rules block expired-license/Suspended drivers but don't mention Off Duty**                                 | Off Duty drivers are excluded from the dispatch pool as well — filtered at selection _and_ re-validated at submission                                                                              |
-| **No rule defines how a vehicle becomes Retired**                                                                     | Treated as a manual Fleet Manager action, available from any non-`On Trip` status                                                                                                                  |
-| **No rule for cancelling a trip still in Draft**                                                                      | No side effects on cancel from Draft, since nothing was locked yet — only Dispatched → Cancelled restores vehicle/driver                                                                           |
-| **PDF export listed as both a feature and a bonus item in different sections**                                        | Treated as optional per the explicit rule in the requirements (CSV is mandatory); PDF export listed under Bonus Features                                                                           |
-| **Safety Score has no defined calculation**                                                                           | Manually editable by the Safety Officer for this build — not derived from an undocumented formula                                                                                                  |
+| **Business rules block expired-license/Suspended drivers but don't mention Off Duty** | Off Duty drivers are excluded from the dispatch pool as well — filtered at selection _and_ re-validated at submission |
+| **No rule defines how a vehicle becomes Retired** | Treated as a manual Fleet Manager action, available from any non-`On Trip` status |
+| **No rule for cancelling a trip still in Draft** | No side effects on cancel from Draft, since nothing was locked yet — only Dispatched → Cancelled restores vehicle/driver |
+| **PDF export listed as both a feature and a bonus item in different sections** | Treated as optional per the explicit rule in the requirements (CSV is mandatory); PDF export listed under Bonus Features |
+| **Safety Score has no defined calculation** | Manually editable by the Safety Officer for this build — not derived from an undocumented formula |
 
-## 🎁 Bonus Features
+## 🎁 Bonus Features & Development Status
 
-- [ ] Charts and visual analytics (fleet utilization trends, cost breakdown)
-- [ ] PDF export for reports
+- [x] PDF export for reports
+- [x] Multi-tenant organization support and isolation
+- [x] Database change tracking via system audit logs
+- [x] Compliance document management (Driving license, PAN, Aadhaar uploads)
+- [x] Custom rate limiters and express helmet integration
+- [x] Safety Score adjusting portal
 - [ ] Email reminders for expiring driver licenses
-- [ ] Vehicle document management (insurance, registration uploads)
-- [ ] Search, filters, and sorting across all list views
-- [ ] Dark mode
+- [ ] Real-time GPS coordinate simulation for active dispatches
 
 ---
-
-## 🖼️ Screenshots
-
-> _Add screenshots or GIFs of the Dashboard, Trip creation flow, and Reports screen here before submission._
-
-| Dashboard    | Trip Dispatch | Reports      |
-| ------------ | ------------- | ------------ |
-| _screenshot_ | _screenshot_  | _screenshot_ |
-
-## 👨‍💻 Team
-
-| Name     | Role | GitHub |
-| -------- | ---- | ------ |
-| Shreyash |      |        |
-| Kiran    |      |        |
-| Zainab   |      |        |
-| Vedant   |      |        |
 
 ## 📄 License
 
