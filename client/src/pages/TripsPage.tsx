@@ -1,3 +1,5 @@
+import { AppPagePlaceholder } from '../components/layout/AppPagePlaceholder'
+
 export function TripsPage() {
-  return <main><h1>Trips</h1></main>
+  return <AppPagePlaceholder title="Trips" />
 }

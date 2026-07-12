@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 
+import { AppLayout } from '../components/layout/AppLayout'
 import { DashboardPage } from '../pages/DashboardPage'
 import { DriversPage } from '../pages/DriversPage'
 import { FuelExpensesPage } from '../pages/FuelExpensesPage'
@@ -7,17 +8,80 @@ import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
 import { MaintenancePage } from '../pages/MaintenancePage'
 import { ReportsPage } from '../pages/ReportsPage'
+import { SettingsPage } from '../pages/SettingsPage'
 import { TripsPage } from '../pages/TripsPage'
 import { VehiclesPage } from '../pages/VehiclesPage'
 
 export const router = createBrowserRouter([
   { path: '/', Component: LandingPage },
   { path: '/login', Component: LoginPage },
-  { path: '/dashboard', Component: DashboardPage },
-  { path: '/vehicles', Component: VehiclesPage },
-  { path: '/drivers', Component: DriversPage },
-  { path: '/trips', Component: TripsPage },
-  { path: '/maintenance', Component: MaintenancePage },
-  { path: '/fuel-expenses', Component: FuelExpensesPage },
-  { path: '/reports', Component: ReportsPage },
+  {
+    Component: AppLayout,
+    children: [
+      {
+        path: 'dashboard',
+        Component: DashboardPage,
+        handle: {
+          title: 'Dashboard',
+          breadcrumbs: [{ label: 'Dashboard' }],
+        },
+      },
+      {
+        path: 'vehicles',
+        Component: VehiclesPage,
+        handle: {
+          title: 'Fleet',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Fleet' }],
+        },
+      },
+      {
+        path: 'drivers',
+        Component: DriversPage,
+        handle: {
+          title: 'Drivers',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Drivers' }],
+        },
+      },
+      {
+        path: 'trips',
+        Component: TripsPage,
+        handle: {
+          title: 'Trips',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Trips' }],
+        },
+      },
+      {
+        path: 'maintenance',
+        Component: MaintenancePage,
+        handle: {
+          title: 'Maintenance',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Maintenance' }],
+        },
+      },
+      {
+        path: 'fuel-expenses',
+        Component: FuelExpensesPage,
+        handle: {
+          title: 'Fuel & Expenses',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Fuel & Expenses' }],
+        },
+      },
+      {
+        path: 'reports',
+        Component: ReportsPage,
+        handle: {
+          title: 'Analytics',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Analytics' }],
+        },
+      },
+      {
+        path: 'settings',
+        Component: SettingsPage,
+        handle: {
+          title: 'Settings',
+          breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Settings' }],
+        },
+      },
+    ],
+  },
 ])

@@ -1,3 +1,5 @@
+import { AppPagePlaceholder } from '../components/layout/AppPagePlaceholder'
+
 export function VehiclesPage() {
-  return <main><h1>Vehicles</h1></main>
+  return <AppPagePlaceholder title="Fleet" />
 }

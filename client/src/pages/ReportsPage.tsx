@@ -1,3 +1,5 @@
+import { AppPagePlaceholder } from '../components/layout/AppPagePlaceholder'
+
 export function ReportsPage() {
-  return <main><h1>Reports</h1></main>
+  return <AppPagePlaceholder title="Analytics" />
 }
