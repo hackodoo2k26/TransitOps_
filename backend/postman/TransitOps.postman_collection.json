@@ -1,0 +1,184 @@
+{
+  "info": {
+    "name": "TransitOps Backend",
+    "_postman_id": "1eb9fd7f-d608-469f-90b1-2dbeed80d3ca",
+    "description": "Postman collection for the TransitOps backend APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"admin@transitops.com\",\"password\":\"Admin@123\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Create Organization",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"ABC Logistics\",\"contactEmail\":\"ops@abclogistics.com\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/organizations",
+          "host": ["{{baseUrl}}"],
+          "path": ["organizations"]
+        }
+      }
+    },
+    {
+      "name": "Invite Fleet Manager",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Fleet Manager\",\"email\":\"manager@abclogistics.com\",\"organizationId\":1,\"roleCodes\":[\"FLEET_MANAGER\"]}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/invite",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "invite"]
+        }
+      }
+    },
+    {
+      "name": "Create Vehicle",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"registrationNumber\":\"MH12AB1234\",\"model\":\"Volvo FH16\",\"vehicleType\":\"Truck\",\"maxCapacity\":12000,\"currentOdometer\":0,\"acquisitionCost\":150000,\"region\":\"West\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/vehicles",
+          "host": ["{{baseUrl}}"],
+          "path": ["vehicles"]
+        }
+      }
+    },
+    {
+      "name": "Create Driver",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"Amit Kumar\",\"employeeId\":\"DRV-001\",\"phone\":\"9876543210\",\"licenseNumber\":\"LIC-001\",\"licenseCategory\":\"HMV\",\"licenseExpiry\":\"2028-01-01\",\"joiningDate\":\"2026-01-01\",\"safetyScore\":95}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/drivers",
+          "host": ["{{baseUrl}}"],
+          "path": ["drivers"]
+        }
+      }
+    },
+    {
+      "name": "Create Trip",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"source\":\"Pune Depot\",\"destination\":\"Mumbai Hub\",\"vehicleId\":1,\"driverId\":1,\"cargoWeight\":4500,\"plannedDistance\":165,\"revenue\":25000}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/trips",
+          "host": ["{{baseUrl}}"],
+          "path": ["trips"]
+        }
+      }
+    },
+    {
+      "name": "Organization Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/dashboards/organization",
+          "host": ["{{baseUrl}}"],
+          "path": ["dashboards", "organization"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    }
+  ]
+}
+

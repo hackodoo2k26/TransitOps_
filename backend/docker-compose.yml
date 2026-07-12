@@ -1,14 +1,38 @@
 services:
   postgres:
     image: postgres:17
-    container_name: postgres-db;
+    container_name: transitops-postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWARD: admin@9090;
-      POSTGRES_DB: Odoo26
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: transitops
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/transitops
+      JWT_SECRET: supersecretjwtvalue123
+      JWT_REFRESH_SECRET: supersecretrefreshvalue123
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      FRONTEND_URL: http://localhost:3000
+      APP_BASE_URL: http://localhost:3001
+      PORT: 3001
+    ports:
+      - "3001:3001"
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 volumes:
   postgres_data:

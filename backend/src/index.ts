@@ -1,28 +1,22 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import authRoutes from "./routes/auth.js";
-import vehicleRoutes from "./routes/vehicles.js";
-import driverRoutes from "./routes/drivers.js";
-import tripRoutes from "./routes/trips.js";
-import maintenanceRoutes from "./routes/maintenance.js";
-import fuelLogRoutes from "./routes/fuel-logs.js";
-import expenseRoutes from "./routes/expenses.js";
+import { app } from "./app.js";
+import { env } from "./config/env.js";
+import { logger } from "./config/logger.js";
+import { pool } from "./db/index.js";
+import { startReminderJobs } from "./jobs/reminders.job.js";
+import { bootstrapService } from "./services/bootstrap.service.js";
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const start = async () => {
+  await pool.query("select 1");
+  await bootstrapService.initializeAccessControl();
+  await bootstrapService.ensureSuperAdmin();
+  startReminderJobs();
 
-app.use(cors());
-app.use(express.json());
+  app.listen(env.PORT, () => {
+    logger.info(`TransitOps backend listening on http://localhost:${env.PORT}`);
+  });
+};
 
-app.use("/auth", authRoutes);
-app.use("/vehicles", vehicleRoutes);
-app.use("/drivers", driverRoutes);
-app.use("/trips", tripRoutes);
-app.use("/maintenance", maintenanceRoutes);
-app.use("/fuel-logs", fuelLogRoutes);
-app.use("/expenses", expenseRoutes);
-
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-app.listen(PORT, () => console.log(`TransitOps backend running on http://localhost:${PORT}`));
+start().catch((error) => {
+  logger.error("Failed to start TransitOps backend", { error });
+  process.exit(1);
+});
