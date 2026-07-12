@@ -115,23 +115,23 @@ TransitOps is a role-based web application that gives every stakeholder — from
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     React Frontend (SPA)                  │
-│   Dashboard · Vehicles · Drivers · Trips · Maintenance     │
-│         Fuel & Expenses · Reports · Admin/RBAC              │
+│                   React Frontend (SPA)                  │
+│  Dashboard · Vehicles · Drivers · Trips · Maintenance   │
+│         Fuel & Expenses · Reports · Admin/RBAC          │
 └───────────────────────────┬─────────────────────────────┘
-                             │  REST API (JWT-authenticated)
+                            │  REST API (JWT-authenticated)
 ┌───────────────────────────▼─────────────────────────────┐
-│                Node.js + Express API Layer                 │
-│   Auth & RBAC Middleware · Business Rule Validators         │
-│   Trip State Machine · Vehicle/Driver Status Engine          │
-│   Cost & Efficiency Calculators                              │
+│              Node.js + Express API Layer                │
+│   Auth & RBAC Middleware · Business Rule Validators     │
+│   Trip State Machine · Vehicle/Driver Status Engine     │
+│   Cost & Efficiency Calculators                         │
 └───────────────────────────┬─────────────────────────────┘
-                             │  Mongoose ODM
+                            │  Mongoose ODM
 ┌───────────────────────────▼─────────────────────────────┐
-│                      MongoDB Database                       │
-│  Users · Vehicles · Drivers · Trips · MaintenanceLogs       │
-│  FuelLogs · Expenses                                         │
-└───────────────────────────────────────────────────────────┘
+│                    MongoDB Database                     │
+│  Users · Vehicles · Drivers · Trips · MaintenanceLogs   │
+│  FuelLogs · Expenses                                    │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ## 🗄️ Database Schema (ER Diagram)
@@ -443,7 +443,7 @@ The original problem statement leaves a few details open to interpretation. Here
 | -------- | ---- | ------ |
 | Shreyash |      |        |
 | Kiran    |      |        |
-| Zaibab   |      |        |
+| Zainab   |      |        |
 | Vedant   |      |        |
 
 ## 📄 License
