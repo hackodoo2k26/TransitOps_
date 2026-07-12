@@ -1,26 +1,10 @@
-:root {
-  color: var(--color-text);
-  background: var(--color-background);
-  color-scheme: dark;
-  font-family: var(--font-sans);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
+:root { color: var(--color-text-primary); background: var(--color-bg-primary); color-scheme: dark; font-family: var(--font-sans); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 * { box-sizing: border-box; }
-
+html { scroll-behavior: smooth; }
 html, body, #root { min-width: 320px; min-height: 100%; margin: 0; }
-
-body { min-height: 100vh; background: var(--color-background); }
-
+body { min-height: 100vh; background: var(--color-bg-primary); }
 main { min-height: 100vh; }
-
-h1 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { color: var(--color-text-primary); font-weight: 600; letter-spacing: -0.02em; }
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }

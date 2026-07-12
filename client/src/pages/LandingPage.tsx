@@ -1,3 +1,5 @@
+import { Navbar } from '../components/layout/Navbar'
+
 export function LandingPage() {
-  return <main><h1>Landing</h1></main>
+  return <><Navbar /><main id="home"><h1>Landing</h1></main></>
 }
