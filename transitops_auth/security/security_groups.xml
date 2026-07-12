@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Fleet Manager group -->
+        <record id="group_fleet_manager" model="res.groups">
+            <field name="name">Fleet Manager</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">Full access to all TransitOps modules</field>
+        </record>
+
+        <!-- Driver group -->
+        <record id="group_driver" model="res.groups">
+            <field name="name">Driver</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">Can view trips assigned to them, update trip status</field>
+        </record>
+
+        <!-- Safety Officer group -->
+        <record id="group_safety_officer" model="res.groups">
+            <field name="name">Safety Officer</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">Can view driver safety scores and maintenance records</field>
+        </record>
+
+        <!-- Financial Analyst group -->
+        <record id="group_financial_analyst" model="res.groups">
+            <field name="name">Financial Analyst</field>
+            <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="comment">Can view fuel logs, expenses, and financial reports</field>
+        </record>
+    </data>
+</odoo>

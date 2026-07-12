@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_vehicle_tree" model="ir.ui.view">
+            <field name="name">transitops.vehicle.tree</field>
+            <field name="model">transitops.vehicle</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="registration_number"/>
+                    <field name="model_name"/>
+                    <field name="type"/>
+                    <field name="max_load_capacity"/>
+                    <field name="odometer"/>
+                    <field name="region"/>
+                    <field name="status"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_vehicle_form" model="ir.ui.view">
+            <field name="name">transitops.vehicle.form</field>
+            <field name="model">transitops.vehicle</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="registration_number"/>
+                                <field name="model_name"/>
+                                <field name="type"/>
+                                <field name="region"/>
+                            </group>
+                            <group>
+                                <field name="status"/>
+                                <field name="max_load_capacity"/>
+                                <field name="odometer"/>
+                                <field name="acquisition_cost"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="trips" string="Trips">
+                                <field name="trip_ids">
+                                    <tree>
+                                        <field name="source"/>
+                                        <field name="destination"/>
+                                        <field name="driver_id"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="maintenance" string="Maintenance">
+                                <field name="maintenance_log_ids">
+                                    <tree>
+                                        <field name="date"/>
+                                        <field name="description"/>
+                                        <field name="cost"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="fuel" string="Fuel">
+                                <field name="fuel_log_ids">
+                                    <tree>
+                                        <field name="date"/>
+                                        <field name="liters"/>
+                                        <field name="cost"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page name="expenses" string="Expenses">
+                                <field name="expense_ids">
+                                    <tree>
+                                        <field name="date"/>
+                                        <field name="type"/>
+                                        <field name="amount"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_vehicle_search" model="ir.ui.view">
+            <field name="name">transitops.vehicle.search</field>
+            <field name="model">transitops.vehicle</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="registration_number"/>
+                    <field name="model_name"/>
+                    <field name="region"/>
+                    <filter name="status_available" string="Available" domain="[('status','=','available')]"/>
+                    <filter name="status_on_trip" string="On Trip" domain="[('status','=','on_trip')]"/>
+                    <filter name="status_in_shop" string="In Shop" domain="[('status','=','in_shop')]"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_transitops_vehicle" model="ir.actions.act_window">
+            <field name="name">Vehicles</field>
+            <field name="res_model">transitops.vehicle</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_vehicle_search"/>
+        </record>
+
+        <menuitem
+            id="menu_transitops_vehicles"
+            name="Vehicles"
+            parent="transitops_auth.menu_transitops_root"
+            action="action_transitops_vehicle"
+            sequence="20"/>
+    </data>
+</odoo>

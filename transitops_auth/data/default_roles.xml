@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="user_fleet_manager" model="res.users">
+            <field name="name">Fleet Manager</field>
+            <field name="login">manager@transitops.com</field>
+            <field name="role">fleet_manager</field>
+            <field name="password">password123</field>
+            <field name="groups_id" eval="[(4, ref('transitops_auth.group_fleet_manager')), (4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="user_driver" model="res.users">
+            <field name="name">Driver User</field>
+            <field name="login">driver@transitops.com</field>
+            <field name="role">driver</field>
+            <field name="password">password123</field>
+            <field name="groups_id" eval="[(4, ref('transitops_auth.group_driver')), (4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="user_safety_officer" model="res.users">
+            <field name="name">Safety Officer</field>
+            <field name="login">safety@transitops.com</field>
+            <field name="role">safety_officer</field>
+            <field name="password">password123</field>
+            <field name="groups_id" eval="[(4, ref('transitops_auth.group_safety_officer')), (4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="user_financial_analyst" model="res.users">
+            <field name="name">Financial Analyst</field>
+            <field name="login">analyst@transitops.com</field>
+            <field name="role">financial_analyst</field>
+            <field name="password">password123</field>
+            <field name="groups_id" eval="[(4, ref('transitops_auth.group_financial_analyst')), (4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Demo Vehicles -->
+        <record id="vehicle_van_05" model="transitops.vehicle">
+            <field name="registration_number">VAN-05</field>
+            <field name="model_name">Ford Transit 350</field>
+            <field name="type">van</field>
+            <field name="max_load_capacity">500</field>
+            <field name="odometer">45230</field>
+            <field name="acquisition_cost">35000</field>
+            <field name="region">North</field>
+            <field name="status">available</field>
+        </record>
+
+        <record id="vehicle_truck_12" model="transitops.vehicle">
+            <field name="registration_number">TRK-12</field>
+            <field name="model_name">Volvo FH16</field>
+            <field name="type">truck</field>
+            <field name="max_load_capacity">12000</field>
+            <field name="odometer">128500</field>
+            <field name="acquisition_cost">150000</field>
+            <field name="region">South</field>
+            <field name="status">on_trip</field>
+        </record>
+
+        <record id="vehicle_bus_08" model="transitops.vehicle">
+            <field name="registration_number">BUS-08</field>
+            <field name="model_name">Mercedes Sprinter</field>
+            <field name="type">bus</field>
+            <field name="max_load_capacity">2000</field>
+            <field name="odometer">89200</field>
+            <field name="acquisition_cost">65000</field>
+            <field name="region">East</field>
+            <field name="status">in_shop</field>
+        </record>
+
+        <record id="vehicle_van_03" model="transitops.vehicle">
+            <field name="registration_number">VAN-03</field>
+            <field name="model_name">RAM ProMaster</field>
+            <field name="type">van</field>
+            <field name="max_load_capacity">600</field>
+            <field name="odometer">31500</field>
+            <field name="acquisition_cost">42000</field>
+            <field name="region">West</field>
+            <field name="status">retired</field>
+        </record>
+
+        <record id="vehicle_truck_07" model="transitops.vehicle">
+            <field name="registration_number">TRK-07</field>
+            <field name="model_name">Scania R500</field>
+            <field name="type">truck</field>
+            <field name="max_load_capacity">15000</field>
+            <field name="odometer">67200</field>
+            <field name="acquisition_cost">175000</field>
+            <field name="region">North</field>
+            <field name="status">available</field>
+        </record>
+
+        <!-- Demo Drivers -->
+        <record id="driver_alex" model="transitops.driver">
+            <field name="name">Alex Johnson</field>
+            <field name="license_number">LIC-12345</field>
+            <field name="license_category">Class C</field>
+            <field name="license_expiry_date">2027-06-15</field>
+            <field name="contact_number">+1-555-0101</field>
+            <field name="safety_score">95</field>
+            <field name="status">available</field>
+        </record>
+
+        <record id="driver_sarah" model="transitops.driver">
+            <field name="name">Sarah Chen</field>
+            <field name="license_number">LIC-12346</field>
+            <field name="license_category">Class A</field>
+            <field name="license_expiry_date">2026-03-22</field>
+            <field name="contact_number">+1-555-0102</field>
+            <field name="safety_score">88</field>
+            <field name="status">on_trip</field>
+        </record>
+
+        <record id="driver_mike" model="transitops.driver">
+            <field name="name">Mike Rivera</field>
+            <field name="license_number">LIC-12347</field>
+            <field name="license_category">Class B</field>
+            <field name="license_expiry_date">2027-11-30</field>
+            <field name="contact_number">+1-555-0103</field>
+            <field name="safety_score">72</field>
+            <field name="status">off_duty</field>
+        </record>
+
+        <record id="driver_emma" model="transitops.driver">
+            <field name="name">Emma Wilson</field>
+            <field name="license_number">LIC-12348</field>
+            <field name="license_category">Class C</field>
+            <field name="license_expiry_date">2025-01-10</field>
+            <field name="contact_number">+1-555-0104</field>
+            <field name="safety_score">91</field>
+            <field name="status">suspended</field>
+        </record>
+
+        <!-- Demo Trips -->
+        <record id="trip_001" model="transitops.trip">
+            <field name="source">Warehouse A - North</field>
+            <field name="destination">Distribution Center 3</field>
+            <field name="vehicle_id" ref="vehicle_truck_12"/>
+            <field name="driver_id" ref="driver_sarah"/>
+            <field name="cargo_weight">8500</field>
+            <field name="planned_distance">340</field>
+            <field name="start_odometer">128500</field>
+            <field name="status">dispatched</field>
+        </record>
+
+        <record id="trip_002" model="transitops.trip">
+            <field name="source">Depot Main</field>
+            <field name="destination">Retail Hub 7</field>
+            <field name="vehicle_id" ref="vehicle_van_05"/>
+            <field name="driver_id" ref="driver_alex"/>
+            <field name="cargo_weight">320</field>
+            <field name="planned_distance">85</field>
+            <field name="start_odometer">45230</field>
+            <field name="end_odometer">45350</field>
+            <field name="fuel_consumed">18.5</field>
+            <field name="revenue">1200</field>
+            <field name="status">completed</field>
+        </record>
+
+        <record id="trip_003" model="transitops.trip">
+            <field name="source">Port Terminal</field>
+            <field name="destination">City Depot</field>
+            <field name="vehicle_id" ref="vehicle_van_05"/>
+            <field name="driver_id" ref="driver_alex"/>
+            <field name="cargo_weight">150</field>
+            <field name="planned_distance">45</field>
+            <field name="status">draft</field>
+        </record>
+
+        <!-- Demo Maintenance Logs -->
+        <record id="maint_001" model="transitops.maintenance_log">
+            <field name="vehicle_id" ref="vehicle_bus_08"/>
+            <field name="description">Oil change and brake pad replacement</field>
+            <field name="cost">450</field>
+            <field name="date">2026-07-08</field>
+            <field name="status">active</field>
+        </record>
+
+        <record id="maint_002" model="transitops.maintenance_log">
+            <field name="vehicle_id" ref="vehicle_van_05"/>
+            <field name="description">Tire rotation and alignment</field>
+            <field name="cost">200</field>
+            <field name="date">2026-06-20</field>
+            <field name="status">closed</field>
+        </record>
+
+        <record id="maint_003" model="transitops.maintenance_log">
+            <field name="vehicle_id" ref="vehicle_truck_07"/>
+            <field name="description">Annual safety inspection</field>
+            <field name="cost">350</field>
+            <field name="date">2026-07-01</field>
+            <field name="status">closed</field>
+        </record>
+
+        <!-- Demo Fuel Logs -->
+        <record id="fuel_001" model="transitops.fuel_log">
+            <field name="vehicle_id" ref="vehicle_truck_12"/>
+            <field name="liters">180</field>
+            <field name="cost">315</field>
+            <field name="date">2026-07-11</field>
+        </record>
+
+        <record id="fuel_002" model="transitops.fuel_log">
+            <field name="vehicle_id" ref="vehicle_van_05"/>
+            <field name="trip_id" ref="trip_002"/>
+            <field name="liters">55</field>
+            <field name="cost">96.25</field>
+            <field name="date">2026-07-10</field>
+        </record>
+
+        <record id="fuel_003" model="transitops.fuel_log">
+            <field name="vehicle_id" ref="vehicle_truck_07"/>
+            <field name="liters">240</field>
+            <field name="cost">420</field>
+            <field name="date">2026-07-09</field>
+        </record>
+
+        <!-- Demo Expenses -->
+        <record id="exp_001" model="transitops.expense">
+            <field name="vehicle_id" ref="vehicle_truck_12"/>
+            <field name="type">toll</field>
+            <field name="amount">45</field>
+            <field name="date">2026-07-11</field>
+        </record>
+
+        <record id="exp_002" model="transitops.expense">
+            <field name="vehicle_id" ref="vehicle_van_05"/>
+            <field name="type">parking</field>
+            <field name="amount">12</field>
+            <field name="date">2026-07-10</field>
+        </record>
+
+        <record id="exp_003" model="transitops.expense">
+            <field name="vehicle_id" ref="vehicle_truck_07"/>
+            <field name="type">toll</field>
+            <field name="amount">55</field>
+            <field name="date">2026-07-09</field>
+        </record>
+
+        <record id="exp_004" model="transitops.expense">
+            <field name="vehicle_id" ref="vehicle_truck_12"/>
+            <field name="type">misc</field>
+            <field name="amount">30</field>
+            <field name="date">2026-07-08</field>
+        </record>
+    </data>
+</odoo>
