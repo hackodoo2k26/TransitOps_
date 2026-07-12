@@ -5,7 +5,7 @@
 ![Status](https://img.shields.io/badge/status-hackathon--build-orange)
 ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=white)
 ![Node.js](https://img.shields.io/badge/backend-Node.js%20%2F%20Express-339933?logo=node.js&logoColor=white)
-![MongoDB](https://img.shields.io/badge/database-MongoDB-47A248?logo=mongodb&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
@@ -115,9 +115,9 @@ TransitOps is a role-based web application that gives every stakeholder — from
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   React Frontend (SPA)                  │
+│                    React Frontend (SPA)                 │
 │  Dashboard · Vehicles · Drivers · Trips · Maintenance   │
-│         Fuel & Expenses · Reports · Admin/RBAC          │
+│          Fuel & Expenses · Reports · Admin/RBAC         │
 └───────────────────────────┬─────────────────────────────┘
                             │  REST API (JWT-authenticated)
 ┌───────────────────────────▼─────────────────────────────┐
@@ -126,9 +126,9 @@ TransitOps is a role-based web application that gives every stakeholder — from
 │   Trip State Machine · Vehicle/Driver Status Engine     │
 │   Cost & Efficiency Calculators                         │
 └───────────────────────────┬─────────────────────────────┘
-                            │  Mongoose ODM
+                            │  Prisma ORM
 ┌───────────────────────────▼─────────────────────────────┐
-│                    MongoDB Database                     │
+│                 PostgreSQL Database                     │
 │  Users · Vehicles · Drivers · Trips · MaintenanceLogs   │
 │  FuelLogs · Expenses                                    │
 └─────────────────────────────────────────────────────────┘
@@ -284,15 +284,16 @@ stateDiagram-v2
 
 ## 🛠️ Tech Stack
 
-| Layer      | Technology                                                         |
-| ---------- | ------------------------------------------------------------------ |
-| Frontend   | React, React Router, Axios, Recharts (analytics), TailwindCSS      |
-| Backend    | Node.js, Express.js                                                |
-| Database   | MongoDB with Mongoose ODM                                          |
-| Auth       | JWT-based sessions, bcrypt password hashing                        |
-| Validation | Server-side rule engine (custom middleware)                        |
-| Export     | CSV generation (`json2csv`)                                        |
-| Deployment | Docker-ready / can be hosted on Render, Railway, or Vercel + Atlas |
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, React Router, Axios, Recharts (analytics), TailwindCSS |
+| Backend | Node.js, Express.js |
+| Database | PostgreSQL |
+| ORM | Prisma (or Sequelize/TypeORM) |
+| Auth | JWT-based sessions, bcrypt password hashing |
+| Validation | Server-side rule engine (custom middleware) |
+| Export | CSV generation (`json2csv`) |
+| Deployment | Docker-ready / can be hosted on Render, Railway, or Vercel + Neon/Supabase |
 
 ## 📁 Project Structure
 
@@ -313,7 +314,7 @@ transitops/
 │   │   └── services/             # API calls
 │   └── package.json
 ├── server/                      # Node.js + Express backend
-│   ├── models/                  # Mongoose schemas
+│   ├── prisma/                  # Prisma schema and migrations
 │   ├── routes/
 │   ├── controllers/
 │   ├── middleware/               # auth, rbac, validators
@@ -328,7 +329,7 @@ transitops/
 ### Prerequisites
 
 - Node.js v18+
-- MongoDB (local instance or Atlas cluster)
+- PostgreSQL (local instance or managed service like Neon/Supabase)
 - npm or yarn
 
 ### Installation
@@ -356,7 +357,7 @@ Create a `.env` file inside `/server` based on `.env.example`:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/transitops
+DATABASE_URL=postgresql://user:password@localhost:5432/transitops
 JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=7d
 ```
