@@ -1,3 +1,5 @@
+import { AppPagePlaceholder } from '../components/layout/AppPagePlaceholder'
+
 export function DriversPage() {
-  return <main><h1>Drivers</h1></main>
+  return <AppPagePlaceholder title="Drivers" />
 }

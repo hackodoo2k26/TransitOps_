@@ -1,3 +1,5 @@
+import { AppPagePlaceholder } from '../components/layout/AppPagePlaceholder'
+
 export function MaintenancePage() {
-  return <main><h1>Maintenance</h1></main>
+  return <AppPagePlaceholder title="Maintenance" />
 }
