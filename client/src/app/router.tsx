@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'vehicles',
-        Component: VehiclesPage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'DISPATCHER', 'FINANCIAL_ANALYST']}><VehiclesPage /></ProtectedRoute>,
         handle: {
           title: 'Fleet',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Fleet' }],
@@ -45,7 +45,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'drivers',
-        Component: DriversPage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'DISPATCHER', 'SAFETY_OFFICER']}><DriversPage /></ProtectedRoute>,
         handle: {
           title: 'Drivers',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Drivers' }],
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'trips',
-        Component: TripsPage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'DISPATCHER']}><TripsPage /></ProtectedRoute>,
         handle: {
           title: 'Trips',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Trips' }],
@@ -61,7 +61,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'maintenance',
-        Component: MaintenancePage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'FINANCIAL_ANALYST']}><MaintenancePage /></ProtectedRoute>,
         handle: {
           title: 'Maintenance',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Maintenance' }],
@@ -69,7 +69,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'fuel-expenses',
-        Component: FuelExpensesPage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'FINANCIAL_ANALYST']}><FuelExpensesPage /></ProtectedRoute>,
         handle: {
           title: 'Fuel & Expenses',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Fuel & Expenses' }],
@@ -77,7 +77,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'reports',
-        Component: ReportsPage,
+        element: <ProtectedRoute allowedRoles={['FLEET_MANAGER', 'FINANCIAL_ANALYST']}><ReportsPage /></ProtectedRoute>,
         handle: {
           title: 'Analytics',
           breadcrumbs: [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Analytics' }],

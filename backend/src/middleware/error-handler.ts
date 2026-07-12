@@ -22,11 +22,18 @@ export const errorHandler = (error: unknown, _req: Request, res: Response, _next
     return;
   }
 
-  logger.error("Unhandled error", { error });
+  if (error instanceof Error) {
+    logger.error("Unhandled error", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+  } else {
+    logger.error("Unhandled error", { error });
+  }
   res.status(500).json({
     success: false,
     message: "Internal server error",
     errors: [],
   });
 };
-

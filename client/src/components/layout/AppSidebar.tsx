@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { appNavigationItems } from '../../lib/app-navigation'
+import { hasAnyRole } from '../../lib/access'
+import { useAuth } from '../../hooks/useAuth'
 import { cn } from '../../lib/cn'
 import { Button } from '../ui/Button'
 
@@ -13,10 +15,13 @@ interface AppSidebarProps {
 }
 
 function SidebarNav({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
+  const { user } = useAuth()
+  const visibleItems = appNavigationItems.filter((item) => !item.roles || hasAnyRole(user, item.roles))
+
   return (
     <nav aria-label="Application" className={cn('app-sidebar__nav', className)}>
       <ul className="app-sidebar__list">
-        {appNavigationItems.map(({ icon: Icon, label, path }) => (
+        {visibleItems.map(({ icon: Icon, label, path }) => (
           <li key={path}>
             <NavLink
               className={({ isActive }) => cn('app-sidebar__link', isActive && 'app-sidebar__link--active')}

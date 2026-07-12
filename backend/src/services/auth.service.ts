@@ -15,6 +15,11 @@ import { generateRandomToken, hashToken } from "../utils/token.js";
 
 const addDays = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 const addHours = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000);
+const assertOrganizationAssignment = (user: { isSuperAdmin: boolean; organizationId: number | null }) => {
+  if (!user.isSuperAdmin && !user.organizationId) {
+    throw new ApiError(403, "User is not assigned to an organization");
+  }
+};
 
 export class AuthService {
   async login(email: string, password: string, context: RequestContext) {
@@ -30,6 +35,8 @@ export class AuthService {
     if (!valid) {
       throw new ApiError(401, "Invalid credentials");
     }
+
+    assertOrganizationAssignment(user);
 
     const roles = await accessRepository.getUserRoles(user.id);
     const payload = {
@@ -77,6 +84,8 @@ export class AuthService {
     if (!user || user.status !== "active") {
       throw new ApiError(401, "User account is not active");
     }
+
+    assertOrganizationAssignment(user);
 
     await authRepository.revokeRefreshToken(hashToken(refreshToken));
 
@@ -233,6 +242,9 @@ export class AuthService {
     if (!user) {
       throw new ApiError(404, "User not found");
     }
+
+    assertOrganizationAssignment(user);
+
     const roles = await accessRepository.getUserRoles(user.id);
     return {
       id: user.id,

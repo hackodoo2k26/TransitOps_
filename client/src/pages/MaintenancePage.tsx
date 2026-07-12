@@ -1,52 +1,92 @@
-import { useState } from "react";
-import { Card } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
-import { Button } from "../components/ui/Button";
-import { Modal } from "../components/ui/Modal";
+import { useEffect, useState } from 'react'
 
-interface Maintenance {
-  id: string;
-  vehicle: string;
-  type: string;
-  dueDate?: string;
-  status: "scheduled" | "in_progress" | "done";
+import { useAuth } from '../hooks/useAuth'
+import { hasAnyRole } from '../lib/access'
+import { Badge } from '../components/ui/Badge'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { EmptyState } from '../components/ui/EmptyState'
+import { ErrorState } from '../components/ui/ErrorState'
+import { Input } from '../components/ui/Input'
+import { Modal } from '../components/ui/Modal'
+import { Select } from '../components/ui/Select'
+import { transitopsService } from '../services/transitops/transitops.service'
+import type { MaintenanceLog, Vehicle } from '../services/transitops/transitops.types'
+
+type FormState = {
+  vehicleId: string
+  description: string
+  cost: string
+  openedAt: string
 }
 
-const initialMaint: Maintenance[] = [
-  {
-    id: "M-200",
-    vehicle: "V-005",
-    type: "Engine check",
-    dueDate: "2026-07-10",
-    status: "scheduled",
-  },
-  {
-    id: "M-199",
-    vehicle: "V-084",
-    type: "Tire replacement",
-    dueDate: "2026-06-12",
-    status: "done",
-  },
-];
+const defaultForm: FormState = {
+  vehicleId: '',
+  description: '',
+  cost: '',
+  openedAt: '',
+}
+
 export function MaintenancePage() {
-  const [q, setQ] = useState("");
-  const [items, setItems] = useState<Maintenance[]>(initialMaint);
-  const [isScheduleOpen, setScheduleOpen] = useState(false);
-  const [viewing, setViewing] = useState<Maintenance | null>(null);
+  const { user } = useAuth()
+  const canManageMaintenance = hasAnyRole(user, ['FLEET_MANAGER'])
+  const [items, setItems] = useState<MaintenanceLog[]>([])
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [form, setForm] = useState<FormState>(defaultForm)
 
-  const list = items.filter((m) =>
-    `${m.id} ${m.vehicle} ${m.type}`.toLowerCase().includes(q.toLowerCase()),
-  );
-
-  function handleSchedule(payload: Omit<Maintenance, "id">) {
-    const id = `M-${Math.floor(Math.random() * 900 + 100)}`;
-    setItems((s) => [{ id, ...payload }, ...s]);
-    setScheduleOpen(false);
+  const loadMaintenance = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const [maintenance, vehicleRows] = await Promise.all([
+        transitopsService.listMaintenance(),
+        transitopsService.listVehicles(),
+      ])
+      setItems(maintenance)
+      setVehicles(vehicleRows)
+    } catch (err) {
+      const apiError = err as { message?: string }
+      setError(apiError.message || 'Failed to load maintenance logs.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  function markDone(id: string) {
-    setItems((s) => s.map((m) => (m.id === id ? { ...m, status: "done" } : m)));
+  useEffect(() => {
+    void loadMaintenance()
+  }, [])
+
+  const createLog = async () => {
+    try {
+      await transitopsService.createMaintenance({
+        vehicleId: Number(form.vehicleId),
+        description: form.description,
+        cost: Number(form.cost),
+        openedAt: form.openedAt,
+      })
+      setIsModalOpen(false)
+      setForm(defaultForm)
+      await loadMaintenance()
+    } catch (err) {
+      const apiError = err as { message?: string }
+      setError(apiError.message || 'Failed to create maintenance log.')
+    }
   }
+
+  const closeLog = async (log: MaintenanceLog) => {
+    try {
+      await transitopsService.closeMaintenance(log.id)
+      await loadMaintenance()
+    } catch (err) {
+      const apiError = err as { message?: string }
+      setError(apiError.message || 'Failed to close maintenance log.')
+    }
+  }
+
+  const vehicleLabel = (id: number) => vehicles.find((vehicle) => vehicle.id === id)?.registrationNumber ?? `#${id}`
 
   return (
     <>
@@ -54,160 +94,66 @@ export function MaintenancePage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-white">Maintenance</h2>
-            <p className="text-sm text-neutral-400">
-              Maintenance schedule and history
-            </p>
+            <p className="text-sm text-neutral-400">Connected to `/api/maintenance`.</p>
           </div>
-          <div className="flex gap-2">
-            <input
-              placeholder="Search maintenance"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="ui-input"
-            />
-            <Button variant="primary" onClick={() => setScheduleOpen(true)}>
-              Schedule
-            </Button>
-          </div>
+          {canManageMaintenance ? <Button onClick={() => setIsModalOpen(true)}>Schedule Maintenance</Button> : <Button variant="secondary" onClick={() => void loadMaintenance()}>Refresh</Button>}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="text-neutral-400 text-xs uppercase tracking-wider">
-              <tr>
-                <th className="py-2 px-3">ID</th>
-                <th className="py-2 px-3">Vehicle</th>
-                <th className="py-2 px-3">Type</th>
-                <th className="py-2 px-3">Due</th>
-                <th className="py-2 px-3">Status</th>
-                <th className="py-2 px-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.04]">
-              {list.map((m) => (
-                <tr
-                  key={m.id}
-                  className="hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="py-3 px-3 font-mono text-orange-400">
-                    {m.id}
-                  </td>
-                  <td className="py-3 px-3">{m.vehicle}</td>
-                  <td className="py-3 px-3">{m.type}</td>
-                  <td className="py-3 px-3">{m.dueDate ?? "-"}</td>
-                  <td className="py-3 px-3">
-                    <Badge
-                      variant={
-                        m.status === "done"
-                          ? "success"
-                          : m.status === "in_progress"
-                            ? "accent"
-                            : "neutral"
-                      }
-                    >
-                      {m.status}
-                    </Badge>
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex gap-2">
-                      <Button variant="ghost" onClick={() => setViewing(m)}>
-                        View
-                      </Button>
-                      <Button variant="outline" onClick={() => markDone(m.id)}>
-                        Mark Done
-                      </Button>
-                    </div>
-                  </td>
+        {error ? <ErrorState title="Maintenance request failed" description={error} action={<Button onClick={() => void loadMaintenance()}>Retry</Button>} /> : null}
+        {isLoading ? <div className="text-sm text-neutral-400">Loading maintenance logs...</div> : null}
+
+        {!isLoading && !items.length ? <EmptyState title="No maintenance logs found" description="Create a maintenance record to track workshop activity." action={canManageMaintenance ? <Button onClick={() => setIsModalOpen(true)}>Create Log</Button> : undefined} /> : null}
+
+        {!!items.length && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="text-neutral-400 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="py-2 px-3">Vehicle</th>
+                  <th className="py-2 px-3">Description</th>
+                  <th className="py-2 px-3">Cost</th>
+                  <th className="py-2 px-3">Opened</th>
+                  <th className="py-2 px-3">Status</th>
+                  <th className="py-2 px-3">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      <Modal
-        title="Schedule Maintenance"
-        isOpen={isScheduleOpen}
-        onClose={() => setScheduleOpen(false)}
-      >
-        <MaintenanceForm
-          onCancel={() => setScheduleOpen(false)}
-          onSave={(p) => handleSchedule(p)}
-        />
-      </Modal>
-
-      <Modal
-        title="Maintenance Details"
-        isOpen={!!viewing}
-        onClose={() => setViewing(null)}
-      >
-        {viewing && (
-          <div className="p-4">
-            <div className="text-sm text-neutral-400">ID</div>
-            <div className="font-mono text-orange-400">{viewing.id}</div>
-            <div className="mt-3 text-sm text-neutral-400">Vehicle</div>
-            <div>{viewing.vehicle}</div>
-            <div className="mt-3 text-sm text-neutral-400">Type</div>
-            <div>{viewing.type}</div>
-            <div className="mt-3 text-sm text-neutral-400">Due</div>
-            <div>{viewing.dueDate ?? "-"}</div>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="py-3 px-3 font-mono text-orange-400">{vehicleLabel(item.vehicleId)}</td>
+                    <td className="py-3 px-3">{item.description}</td>
+                    <td className="py-3 px-3">${item.cost}</td>
+                    <td className="py-3 px-3">{item.openedAt}</td>
+                    <td className="py-3 px-3">
+                      <Badge variant={item.status === 'closed' ? 'success' : 'warning'}>{item.status}</Badge>
+                    </td>
+                    <td className="py-3 px-3">
+                      {canManageMaintenance && item.status === 'open' ? <Button variant="outline" onClick={() => void closeLog(item)}>Close</Button> : <span className="text-neutral-500">No action</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
+      </Card>
+
+      <Modal title="Schedule Maintenance" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="p-4 grid gap-3">
+          <Select label="Vehicle" value={form.vehicleId} onChange={(e) => setForm((current) => ({ ...current, vehicleId: e.target.value }))}>
+            <option value="">Select vehicle</option>
+            {vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.registrationNumber}</option>)}
+          </Select>
+          <Input label="Description" value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} />
+          <Input label="Cost" type="number" value={form.cost} onChange={(e) => setForm((current) => ({ ...current, cost: e.target.value }))} />
+          <Input label="Opened At" type="date" value={form.openedAt} onChange={(e) => setForm((current) => ({ ...current, openedAt: e.target.value }))} />
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button onClick={() => void createLog()}>Create Log</Button>
+          </div>
+        </div>
       </Modal>
     </>
-  );
+  )
 }
 
-function MaintenanceForm({
-  onSave,
-  onCancel,
-}: {
-  onSave: (m: Omit<Maintenance, "id">) => void;
-  onCancel: () => void;
-}) {
-  const [vehicle, setVehicle] = useState("");
-  const [type, setType] = useState("");
-  const [dueDate, setDueDate] = useState("");
-
-  return (
-    <div className="p-4 space-y-3">
-      <div>
-        <label className="block text-sm text-neutral-400">Vehicle</label>
-        <input
-          className="ui-input mt-1"
-          value={vehicle}
-          onChange={(e) => setVehicle(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm text-neutral-400">Type</label>
-        <input
-          className="ui-input mt-1"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="block text-sm text-neutral-400">Due Date</label>
-        <input
-          className="ui-input mt-1"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
-      </div>
-      <div className="flex gap-2 justify-end">
-        <Button variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          onClick={() =>
-            onSave({ vehicle, type, dueDate, status: "scheduled" })
-          }
-        >
-          Schedule
-        </Button>
-      </div>
-    </div>
-  );
-}
