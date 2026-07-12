@@ -1,8 +1,9 @@
-import { Bell, Menu, Search } from 'lucide-react'
+import { Bell, Menu, Search, LogOut } from 'lucide-react'
 
 import type { AppBreadcrumb } from '../../lib/app-navigation'
 import { Button } from '../ui/Button'
 import { AppBreadcrumbs } from './AppBreadcrumbs'
+import { useAuth } from '../../hooks/useAuth'
 
 interface AppTopbarProps {
   breadcrumbs: AppBreadcrumb[]
@@ -11,6 +12,23 @@ interface AppTopbarProps {
 }
 
 export function AppTopbar({ breadcrumbs, onOpenDrawer, title }: AppTopbarProps) {
+  const { user, logout } = useAuth()
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'U'
+
+  const roleText = user?.isSuperAdmin
+    ? 'Super Admin'
+    : user?.roles && user.roles.length > 0
+    ? user.roles.map((r) => r.replace('_', ' ')).join(', ')
+    : 'User'
+
   return (
     <header className="app-topbar">
       <div className="app-topbar__primary">
@@ -42,13 +60,23 @@ export function AppTopbar({ breadcrumbs, onOpenDrawer, title }: AppTopbarProps) 
 
           <div aria-label="User profile" className="app-topbar__profile" role="group">
             <span aria-hidden="true" className="app-topbar__avatar">
-              SO
+              {initials}
             </span>
             <div className="app-topbar__profile-copy">
-              <span className="app-topbar__profile-name">Shrey Ops</span>
-              <span className="app-topbar__profile-role">Administrator</span>
+              <span className="app-topbar__profile-name">{user?.name || 'User'}</span>
+              <span className="app-topbar__profile-role">{roleText}</span>
             </div>
           </div>
+
+          <Button
+            aria-label="Log Out"
+            className="app-topbar__icon-button"
+            onClick={logout}
+            variant="ghost"
+            style={{ color: 'var(--color-error)' }}
+          >
+            <LogOut aria-hidden="true" size={20} />
+          </Button>
         </div>
       </div>
     </header>

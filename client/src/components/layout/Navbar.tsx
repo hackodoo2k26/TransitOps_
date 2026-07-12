@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '../ui/Button'
 import { Container } from '../ui/Container'
@@ -22,6 +23,7 @@ interface NavbarProps {
 export function Navbar({ activeItem = 'Home' }: NavbarProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 8)
@@ -54,7 +56,7 @@ export function Navbar({ activeItem = 'Home' }: NavbarProps) {
         </div>
 
         <div className="app-navbar__actions">
-          <Button variant="secondary">Login</Button>
+          <Button onClick={() => navigate('/login')} variant="secondary">Login</Button>
           <Button>Start Free Trial</Button>
         </div>
 
@@ -69,7 +71,7 @@ export function Navbar({ activeItem = 'Home' }: NavbarProps) {
         <motion.div animate="visible" className="app-navbar__drawer" id="mobile-navigation" initial="hidden" onMouseDown={(event) => event.stopPropagation()} role="dialog" transition={{ type: 'spring', damping: 28, stiffness: 320 }} variants={{ hidden: { x: '100%' }, visible: { x: 0 } }}>
           <div className="app-navbar__drawer-header"><span className="app-navbar__brand">TransitOps</span><Button aria-label="Close navigation menu" onClick={closeDrawer} variant="ghost"><X aria-hidden="true" size={22} /></Button></div>
           <div className="app-navbar__drawer-links">{navigationItems.map((item) => <a aria-current={activeItem === item.label ? 'page' : undefined} className="app-navbar__drawer-link" href={item.href} key={item.label} onClick={closeDrawer}>{item.label}</a>)}</div>
-          <div className="app-navbar__drawer-actions"><Button onClick={closeDrawer} variant="secondary">Login</Button><Button onClick={closeDrawer}>Start Free Trial</Button></div>
+          <div className="app-navbar__drawer-actions"><Button onClick={() => { closeDrawer(); navigate('/login') }} variant="secondary">Login</Button><Button onClick={closeDrawer}>Start Free Trial</Button></div>
         </motion.div>
       </motion.div> : null}
     </AnimatePresence>

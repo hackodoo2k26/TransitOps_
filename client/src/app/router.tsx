@@ -6,17 +6,26 @@ import { DriversPage } from '../pages/DriversPage'
 import { FuelExpensesPage } from '../pages/FuelExpensesPage'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { MaintenancePage } from '../pages/MaintenancePage'
 import { ReportsPage } from '../pages/ReportsPage'
 import { SettingsPage } from '../pages/SettingsPage'
 import { TripsPage } from '../pages/TripsPage'
 import { VehiclesPage } from '../pages/VehiclesPage'
+import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 
 export const router = createBrowserRouter([
   { path: '/', Component: LandingPage },
   { path: '/login', Component: LoginPage },
+  { path: '/forgot-password', Component: ForgotPasswordPage },
+  { path: '/reset-password', Component: ResetPasswordPage },
   {
-    Component: AppLayout,
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: 'dashboard',
