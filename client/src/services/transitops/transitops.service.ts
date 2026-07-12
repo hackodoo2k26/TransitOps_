@@ -1,5 +1,6 @@
 import { authStorage } from '../auth/auth.storage'
 import { api } from '../auth/api'
+import { showErrorToast } from '../../lib/toast'
 import type {
   Driver,
   Expense,
@@ -21,6 +22,7 @@ const authorizedBlobRequest = async (path: string) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
+    showErrorToast(errorData, 'Failed to export report.')
     throw errorData
   }
 
@@ -278,4 +280,3 @@ export const transitopsService = {
     return authorizedBlobRequest(`/reports/monthly-expenses/export?format=${format}`)
   },
 }
-

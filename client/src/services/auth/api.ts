@@ -1,4 +1,5 @@
 import { authStorage } from './auth.storage'
+import { getErrorMessage, showErrorToast } from '../../lib/toast'
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001/api'
 
@@ -62,7 +63,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   try {
     response = await fetch(url, fetchOptions)
   } catch {
-    throw { success: false, message: 'Network connection failed' }
+    const error = { success: false, message: 'Network connection failed' }
+    showErrorToast(error, 'Network connection failed')
+    throw error
   }
 
   if (response.status === 401 && !path.includes('/auth/login') && !path.includes('/auth/refresh')) {
@@ -89,18 +92,23 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
             isRefreshing = false
             authStorage.clear()
             triggerUnauthorized()
-            throw { success: false, message: 'Unauthorized session expired' }
+            const error = { success: false, message: 'Unauthorized session expired' }
+            showErrorToast(error, 'Unauthorized session expired')
+            throw error
           }
         } catch (err) {
           isRefreshing = false
           authStorage.clear()
           triggerUnauthorized()
+          showErrorToast(err, 'Unauthorized session expired')
           throw err
         }
       } else {
         authStorage.clear()
         triggerUnauthorized()
-        throw { success: false, message: 'Unauthorized' }
+        const error = { success: false, message: 'Unauthorized' }
+        showErrorToast(error, 'Unauthorized')
+        throw error
       }
     }
 
@@ -114,6 +122,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
           .then(async (res) => {
             if (!res.ok) {
               const errorData = await res.json().catch(() => ({}))
+              showErrorToast(errorData, getErrorMessage(errorData, 'Request failed'))
               reject(errorData)
             } else {
               const resData = await res.json()
@@ -127,6 +136,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
+    showErrorToast(errorData, getErrorMessage(errorData, 'Request failed'))
     throw errorData
   }
 

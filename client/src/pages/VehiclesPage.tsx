@@ -211,22 +211,24 @@ export function VehiclesPage() {
         )}
       </Card>
 
-      <Modal title={editing ? 'Edit Vehicle' : 'Create Vehicle'} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className="p-4 grid gap-3">
-          <Input label="Registration Number" value={form.registrationNumber} onChange={(e) => setForm((current) => ({ ...current, registrationNumber: e.target.value }))} />
-          <Input label="Model" value={form.model} onChange={(e) => setForm((current) => ({ ...current, model: e.target.value }))} />
-          <Input label="Vehicle Type" value={form.vehicleType} onChange={(e) => setForm((current) => ({ ...current, vehicleType: e.target.value }))} />
-          <Input label="Max Capacity" type="number" value={form.maxCapacity} onChange={(e) => setForm((current) => ({ ...current, maxCapacity: e.target.value }))} />
-          <Input label="Current Odometer" type="number" value={form.currentOdometer} onChange={(e) => setForm((current) => ({ ...current, currentOdometer: e.target.value }))} />
-          <Input label="Acquisition Cost" type="number" value={form.acquisitionCost} onChange={(e) => setForm((current) => ({ ...current, acquisitionCost: e.target.value }))} />
-          <Input label="Region" value={form.region} onChange={(e) => setForm((current) => ({ ...current, region: e.target.value }))} />
-          <Select label="Status" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value as Vehicle['status'] }))}>
-            <option value="available">Available</option>
-            <option value="on_trip">On trip</option>
-            <option value="in_shop">In shop</option>
-            <option value="retired">Retired</option>
-          </Select>
-          <div className="flex justify-end gap-2">
+      <Modal title={editing ? 'Edit Vehicle' : 'Create Vehicle'} isOpen={isModalOpen} maxWidth="52rem" onClose={() => setIsModalOpen(false)}>
+        <div className="grid gap-4 p-4 sm:p-1">
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input label="Registration Number" value={form.registrationNumber} onChange={(e) => setForm((current) => ({ ...current, registrationNumber: e.target.value }))} />
+            <Input label="Model" value={form.model} onChange={(e) => setForm((current) => ({ ...current, model: e.target.value }))} />
+            <Input label="Vehicle Type" value={form.vehicleType} onChange={(e) => setForm((current) => ({ ...current, vehicleType: e.target.value }))} />
+            <Input label="Region" value={form.region} onChange={(e) => setForm((current) => ({ ...current, region: e.target.value }))} />
+            <Input label="Max Capacity" type="number" value={form.maxCapacity} onChange={(e) => setForm((current) => ({ ...current, maxCapacity: e.target.value }))} />
+            <Select label="Status" value={form.status} onChange={(e) => setForm((current) => ({ ...current, status: e.target.value as Vehicle['status'] }))}>
+              <option value="available">Available</option>
+              <option value="on_trip">On trip</option>
+              <option value="in_shop">In shop</option>
+              <option value="retired">Retired</option>
+            </Select>
+            <Input label="Current Odometer" type="number" value={form.currentOdometer} onChange={(e) => setForm((current) => ({ ...current, currentOdometer: e.target.value }))} />
+            <Input label="Acquisition Cost" type="number" value={form.acquisitionCost} onChange={(e) => setForm((current) => ({ ...current, acquisitionCost: e.target.value }))} />
+          </div>
+          <div className="flex flex-col-reverse gap-2 border-t border-white/[0.06] pt-4 sm:flex-row sm:justify-end">
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
             <Button onClick={() => void saveVehicle()}>{editing ? 'Save Changes' : 'Create Vehicle'}</Button>
           </div>
@@ -235,4 +237,3 @@ export function VehiclesPage() {
     </>
   )
 }
-
