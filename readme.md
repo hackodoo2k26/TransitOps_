@@ -430,23 +430,6 @@ The original problem statement leaves a few details open to interpretation. Here
 
 ---
 
-## 🖼️ Screenshots
-
-> _Add screenshots or GIFs of the Dashboard, Trip creation flow, and Reports screen here before submission._
-
-| Dashboard    | Trip Dispatch | Reports      |
-| ------------ | ------------- | ------------ |
-| _screenshot_ | _screenshot_  | _screenshot_ |
-
-## 👨‍💻 Team
-
-| Name     | Role | GitHub |
-| -------- | ---- | ------ |
-| Shreyash |      |        |
-| Kiran    |      |        |
-| Zainab   |      |        |
-| Vedant   |      |        |
-
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE) — built for [Hackathon Name] 2026.
