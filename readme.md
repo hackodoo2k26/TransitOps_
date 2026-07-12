@@ -558,7 +558,7 @@ The original problem statement leaves a few details open to interpretation. Here
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE) — built for [Hackathon Name] 2026.
+This project is licensed under the [MIT License](LICENSE) — built for Odoo Hackathon 2026.
 
 ---
 
