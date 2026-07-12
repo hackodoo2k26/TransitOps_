@@ -25,20 +25,28 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(row);
 });
 
-router.post("/", requireRole("fleet_manager"), async (req: Request, res: Response) => {
-  const data = req.body;
-  const [row] = await db.insert(vehicles).values(data).returning();
+router.post("/", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
+  const [row] = await db.insert(vehicles).values(req.body).returning();
   res.status(201).json(row);
 });
 
-router.put("/:id", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.put("/:id", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [row] = await db.update(vehicles).set(req.body)
     .where(eq(vehicles.id, Number(req.params.id))).returning();
   if (!row) { res.status(404).json({ error: "Vehicle not found" }); return; }
   res.json(row);
 });
 
-router.delete("/:id", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/:id/retire", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
+  const [row] = await db.select().from(vehicles).where(eq(vehicles.id, Number(req.params.id)));
+  if (!row) { res.status(404).json({ error: "Vehicle not found" }); return; }
+  if (row.status === "on_trip") { res.status(400).json({ error: "Cannot retire a vehicle that is on a trip" }); return; }
+  const [updated] = await db.update(vehicles).set({ status: "retired" })
+    .where(eq(vehicles.id, row.id)).returning();
+  res.json(updated);
+});
+
+router.delete("/:id", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [row] = await db.delete(vehicles).where(eq(vehicles.id, Number(req.params.id))).returning();
   if (!row) { res.status(404).json({ error: "Vehicle not found" }); return; }
   res.json({ deleted: true });

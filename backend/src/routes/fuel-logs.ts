@@ -18,19 +18,19 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(row);
 });
 
-router.post("/", requireRole("fleet_manager", "financial_analyst"), async (req: Request, res: Response) => {
+router.post("/", requireRole("super_admin", "fleet_manager", "financial_analyst"), async (req: Request, res: Response) => {
   const [row] = await db.insert(fuelLogs).values(req.body).returning();
   res.status(201).json(row);
 });
 
-router.put("/:id", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.put("/:id", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [row] = await db.update(fuelLogs).set(req.body)
     .where(eq(fuelLogs.id, Number(req.params.id))).returning();
   if (!row) { res.status(404).json({ error: "Fuel log not found" }); return; }
   res.json(row);
 });
 
-router.delete("/:id", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.delete("/:id", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [row] = await db.delete(fuelLogs).where(eq(fuelLogs.id, Number(req.params.id))).returning();
   if (!row) { res.status(404).json({ error: "Fuel log not found" }); return; }
   res.json({ deleted: true });

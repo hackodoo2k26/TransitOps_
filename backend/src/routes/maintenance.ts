@@ -18,7 +18,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(row);
 });
 
-router.post("/", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const data = req.body;
   const [row] = await db.insert(maintenanceLogs).values(data).returning();
   if (row.status === "active") {
@@ -27,14 +27,14 @@ router.post("/", requireRole("fleet_manager"), async (req: Request, res: Respons
   res.status(201).json(row);
 });
 
-router.put("/:id", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.put("/:id", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [row] = await db.update(maintenanceLogs).set(req.body)
     .where(eq(maintenanceLogs.id, Number(req.params.id))).returning();
   if (!row) { res.status(404).json({ error: "Maintenance log not found" }); return; }
   res.json(row);
 });
 
-router.post("/:id/close", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/:id/close", requireRole("super_admin", "fleet_manager"), async (req: Request, res: Response) => {
   const [log] = await db.select().from(maintenanceLogs).where(eq(maintenanceLogs.id, Number(req.params.id)));
   if (!log) { res.status(404).json({ error: "Maintenance log not found" }); return; }
   if (log.status !== "active") { res.status(400).json({ error: "Only active logs can be closed" }); return; }

@@ -8,12 +8,18 @@ async function seed() {
 
   const pwd = await hashPassword("password123");
 
+  const [sa] = await db.insert(users).values({
+    name: "Super Admin", email: "admin@transitops.com",
+    passwordHash: pwd, role: "super_admin",
+  }).returning();
+
   const [fm] = await db.insert(users).values({
     name: "Fleet Manager", email: "manager@transitops.com",
     passwordHash: pwd, role: "fleet_manager",
   }).returning();
 
   await db.insert(users).values([
+    { name: "Dispatcher User", email: "dispatcher@transitops.com", passwordHash: pwd, role: "dispatcher" },
     { name: "Driver User", email: "driver@transitops.com", passwordHash: pwd, role: "driver" },
     { name: "Safety Officer", email: "safety@transitops.com", passwordHash: pwd, role: "safety_officer" },
     { name: "Financial Analyst", email: "analyst@transitops.com", passwordHash: pwd, role: "financial_analyst" },

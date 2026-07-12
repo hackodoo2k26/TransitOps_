@@ -9,7 +9,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role", {
-    enum: ["fleet_manager", "driver", "safety_officer", "financial_analyst"],
+    enum: ["super_admin", "fleet_manager", "dispatcher", "driver", "safety_officer", "financial_analyst"],
   }).notNull().default("driver"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

@@ -7,14 +7,6 @@ import { authMiddleware, requireRole } from "../auth.js";
 const router = Router();
 router.use(authMiddleware);
 
-function enforceBusinessRules(trip: typeof trips.$inferInsert) {
-  const errors: string[] = [];
-  if (trip.cargoWeight && trip.vehicleId) {
-    errors.push("Check cargo weight against vehicle capacity");
-  }
-  return errors;
-}
-
 router.get("/", async (req: Request, res: Response) => {
   const user = (req as any).user;
   const where = user.role === "driver" ? eq(trips.driverId, user.userId) : undefined;
@@ -30,7 +22,7 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(row);
 });
 
-router.post("/", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/", requireRole("super_admin", "fleet_manager", "dispatcher"), async (req: Request, res: Response) => {
   const data = { ...req.body, userId: (req as any).user.userId, status: "draft" };
   if (data.cargoWeight && data.vehicleId) {
     const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.id, data.vehicleId));
@@ -43,7 +35,7 @@ router.post("/", requireRole("fleet_manager"), async (req: Request, res: Respons
   res.status(201).json(row);
 });
 
-router.post("/:id/dispatch", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/:id/dispatch", requireRole("super_admin", "fleet_manager", "dispatcher"), async (req: Request, res: Response) => {
   const [trip] = await db.select().from(trips).where(eq(trips.id, Number(req.params.id)));
   if (!trip) { res.status(404).json({ error: "Trip not found" }); return; }
   if (trip.status !== "draft") { res.status(400).json({ error: "Only draft trips can be dispatched" }); return; }
@@ -66,7 +58,7 @@ router.post("/:id/dispatch", requireRole("fleet_manager"), async (req: Request, 
   res.json(updated);
 });
 
-router.post("/:id/complete", requireRole("fleet_manager", "driver"), async (req: Request, res: Response) => {
+router.post("/:id/complete", requireRole("super_admin", "fleet_manager", "dispatcher", "driver"), async (req: Request, res: Response) => {
   const [trip] = await db.select().from(trips).where(eq(trips.id, Number(req.params.id)));
   if (!trip) { res.status(404).json({ error: "Trip not found" }); return; }
   if (trip.status !== "dispatched") { res.status(400).json({ error: "Only dispatched trips can be completed" }); return; }
@@ -82,7 +74,7 @@ router.post("/:id/complete", requireRole("fleet_manager", "driver"), async (req:
   res.json(updated);
 });
 
-router.post("/:id/cancel", requireRole("fleet_manager"), async (req: Request, res: Response) => {
+router.post("/:id/cancel", requireRole("super_admin", "fleet_manager", "dispatcher"), async (req: Request, res: Response) => {
   const [trip] = await db.select().from(trips).where(eq(trips.id, Number(req.params.id)));
   if (!trip) { res.status(404).json({ error: "Trip not found" }); return; }
   if (trip.status === "completed") { res.status(400).json({ error: "Completed trips cannot be cancelled" }); return; }
