@@ -419,7 +419,7 @@ The original problem statement leaves a few details open to interpretation. Here
 | **PDF export listed as both a feature and a bonus item in different sections**                                        | Treated as optional per the explicit rule in the requirements (CSV is mandatory); PDF export listed under Bonus Features                                                                           |
 | **Safety Score has no defined calculation**                                                                           | Manually editable by the Safety Officer for this build — not derived from an undocumented formula                                                                                                  |
 
-## 🎁 Bonus Features
+## 🎁 Bonus Features (to be added)
 
 - [ ] Charts and visual analytics (fleet utilization trends, cost breakdown)
 - [ ] PDF export for reports
