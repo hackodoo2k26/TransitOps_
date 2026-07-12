@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,7 +31,10 @@ import { Button } from "../components/ui/Button";
 import { Select } from "../components/ui/Select";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState } from "../components/ui/ErrorState";
+import { Modal } from "../components/ui/Modal";
+import { Input } from "../components/ui/Input";
 import { fadeIn, fadeUp, staggerChildren, scaleIn } from "../lib/motion";
+import api, { getStoredTokens } from "../lib/api";
 
 // Mock Data
 interface Trip {
@@ -150,6 +153,15 @@ export function DashboardPage() {
   const [viewState, setViewState] = useState<
     "standard" | "loading" | "empty" | "error"
   >("standard");
+  const [loadingData, setLoadingData] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [dashboardOrg, setDashboardOrg] = useState<any | null>(null);
+  const [dashboardGlobal, setDashboardGlobal] = useState<any | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] =
+    useState<boolean>(!!getStoredTokens());
   const [vehicleType, setVehicleType] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [regionFilter, setRegionFilter] = useState("all");
@@ -157,16 +169,57 @@ export function DashboardPage() {
 
   // Simulate refresh loading state
   const handleRefresh = () => {
-    setViewState("loading");
-    const timer = setTimeout(() => {
-      setViewState("standard");
-    }, 1000);
-    return () => clearTimeout(timer);
+    // trigger a real refresh of dashboard data
+    fetchDashboard();
   };
 
   // Handle fake export
   const handleExport = () => {
     alert("Exporting dashboard metrics to CSV...");
+  };
+
+  const fetchDashboard = async () => {
+    setLoadingData(true);
+    setViewState("loading");
+    setErrorMsg(null);
+    try {
+      const org = await api.getDashboardOrganization();
+      const global = await api.getDashboardGlobal();
+      setDashboardOrg(org);
+      setDashboardGlobal(global);
+      setViewState("standard");
+    } catch (err: any) {
+      if (err?.message === "unauthorized") {
+        setIsAuthenticated(false);
+        setShowLogin(true);
+      } else {
+        setErrorMsg(err?.message ?? String(err));
+        setViewState("error");
+      }
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDashboard();
+    } else {
+      // show login hint but keep UI usable
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    try {
+      await api.login(email, password);
+      setIsAuthenticated(true);
+      setShowLogin(false);
+      fetchDashboard();
+    } catch (err: any) {
+      alert("Login failed: " + (err?.message || "unknown"));
+    }
   };
 
   return (
@@ -252,6 +305,23 @@ export function DashboardPage() {
             <span>Home</span>
           </Button>
           <Button
+            aria-label={isAuthenticated ? "Logout" : "Login"}
+            className="h-11"
+            onClick={async () => {
+              if (isAuthenticated) {
+                await api.logout();
+                setIsAuthenticated(false);
+                setDashboardOrg(null);
+                setDashboardGlobal(null);
+              } else {
+                setShowLogin(true);
+              }
+            }}
+            variant="ghost"
+          >
+            <span>{isAuthenticated ? "Logout" : "Login"}</span>
+          </Button>
+          <Button
             aria-label="Refresh Data"
             className="h-11"
             onClick={handleRefresh}
@@ -269,6 +339,18 @@ export function DashboardPage() {
             <Download className="h-4 w-4" />
             <span>Export</span>
           </Button>
+          <div className="flex items-center text-xs text-neutral-400 pl-2">
+            {isAuthenticated ? (
+              <span>Connected to backend</span>
+            ) : (
+              <span>Not connected</span>
+            )}
+            <span style={{ display: "none" }}>
+              {loadingData ? "loading" : ""}
+              {dashboardOrg ? JSON.stringify(dashboardOrg) : ""}
+              {dashboardGlobal ? JSON.stringify(dashboardGlobal) : ""}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -390,7 +472,10 @@ export function DashboardPage() {
                     Try Again
                   </Button>
                 }
-                description="The application encountered an unexpected failure fetching the fleet metrics telemetry database."
+                description={
+                  errorMsg ??
+                  "The application encountered an unexpected failure fetching the fleet metrics telemetry database."
+                }
                 title="Failed to Load Dashboard Data"
               />
             </Card>
@@ -741,6 +826,32 @@ export function DashboardPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <Modal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+        title="Sign in to backend"
+      >
+        <form onSubmit={handleLogin} className="p-4 space-y-4">
+          <Input
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className="flex justify-end">
+            <Button type="submit" variant="primary">
+              Sign in
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </motion.div>
   );
 }
